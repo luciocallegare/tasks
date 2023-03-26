@@ -3,7 +3,7 @@ const {Schema,model} = require('mongoose')
 const taskSchema = new Schema({
     name: String,
     description: String,
-    completed: Boolean
+    completed: { type: Boolean, default: false }
 })
 
 taskSchema.set('toJSON',{
