@@ -4,7 +4,7 @@ const port = process.env.PORT
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const Functions = require('./utils/functions')
-const Validator = require('./utils/errorHandling')
+const Validator = require('./utils/validator')
 
 mongoose.connect(process.env.DB_CONNECTION)
 
@@ -12,6 +12,10 @@ app.use(bodyParser.json())
 app.listen(port,()=>{
     console.log('App listening at port ',port)
 })
+
+app.use(Validator.checkUserBody)
+app.post('/signup',Validator.checkUser, async (req,res) => res.send(Functions.signUp(req.body?.user)))
+app.post('/login',Validator.checkUserLogin)
 
 app.use(Validator.checkToken)
 app.get('/tasks/:id?', async (req,res) => res.send(Functions.getTasks(req.params?.id)))

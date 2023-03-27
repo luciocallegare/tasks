@@ -1,19 +1,19 @@
 const {Schema,model} = require('mongoose')
 
-const taskSchema = new Schema({
-    name: String,
-    description: String,
-    completed: { type: Boolean, default: false }
+const userSchema = new Schema({
+    username: String,
+    passwordHash: String
 })
 
-taskSchema.set('toJSON',{
+userSchema.set('toJSON',{
     transform: (document,returnedObject)=>{
         returnedObject.id = returnedObject._id
         delete returnedObject._id
         delete returnedObject.__v
+        delete returnedObject.passwordHash        
     }
 })
 
-const Task = model('Task',taskSchema)
+const User = model('User',userSchema)
 
-module.exports = Task
+module.exports = User

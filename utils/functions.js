@@ -2,6 +2,9 @@ const Tasks = require('../models/Tasks')
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
 const NOTFOUND_CODE = 'ERRNOTFOUND'
+const jwt = require("jsonwebtoken")
+const User = require('../models/Users')
+const bcrypt = require('bcryptjs')
 
 const getTasks = async (taskId) => {
     if (typeof taskId != 'undefined'){
@@ -43,10 +46,19 @@ const deleteTask = async (taskId) => {
 const addTask = async (task)=>{
     const taskSaved = await Tasks(task).save()
     return {
-        message: 'Client saved successfully',
+        message: 'Task saved successfully',
         status: 'ok',
         task: taskSaved
     }
 }
 
-module.exports = {getTasks,modifyTask,deleteTask,addTask}
+const signUp = async (userObj) => {
+    userObj.passwordHash = await bcrypt.hash(userObj.password,10)
+    await User(userObj).save()
+    return {
+        message: 'User created successfully',
+        status: 'ok'
+    }
+}
+
+module.exports = {getTasks,modifyTask,deleteTask,addTask,signUp}
