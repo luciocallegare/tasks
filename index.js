@@ -14,15 +14,15 @@ app.listen(port,()=>{
 })
 
 app.use(Validator.checkUserBody)
-app.post('/signup',Validator.checkUser, async (req,res) => res.send(Functions.signUp(req.body?.user)))
+app.post('/signup',Validator.checkUser, async (req,res) => res.send(await Functions.signUp(req.body)))
 app.post('/login',Validator.checkUserLogin)
 
 app.use(Validator.checkToken)
-app.get('/tasks/:id?', async (req,res) => res.send(Functions.getTasks(req.params?.id)))
+app.get('/tasks/:id?', async (req,res) => res.send(await Functions.getTasks(req.params?.id)))
 
 app.use(Validator.checkParams)
-app.put('/tasks/:id?',async (req,res)=> res.send(Functions.modifyTask(req.params?.id,req.body)))
-app.delete('/tasks/:id?',async (req,res)=> res.send(Functions.deleteTask(req.params?.id)))
+app.put('/tasks/:id?',async (req,res)=> res.send(await Functions.modifyTask(req.params?.id,req.body)))
+app.delete('/tasks/:id?',async (req,res)=> res.send(await Functions.deleteTask(req.params?.id)))
 
 app.use(Validator.checkBody)
-app.post('/tasks', async (req,res)=> res.send(Functions.addTask(req.body)))
+app.post('/tasks', async (req,res)=> res.send(await Functions.addTask(req.body)))

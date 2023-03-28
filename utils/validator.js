@@ -14,9 +14,13 @@ const checkBody = (req,res,next) => {
 }
 
 const checkUserBody = (req,res,next) => {
-    body('username').notEmpty()
-    body('password').notEmpty()
+    if (Object.keys(req.body).length === 0) {
+        return res.status(400).json({error:'Empty body'})
+    }
+    body('username').exists().notEmpty()
+    body('password').exists().notEmpty()
     const errors = validationResult(req)
+    console.log(errors)
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -34,25 +38,26 @@ const checkParams = (req,res,next) => {
 
 const checkToken = (req,res,next) => {
     const authHeader = req.headers["authorization"]
-    const token = authHeader.split(" ")[1]
+    const token = authHeader?.split(" ")[1]
     if (token == null) { 
-        res.status(400).json("Token not present")
+        return res.status(400).json("Token not present")
     }    
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if (err) { 
-            res.status(403).json({ error: "Token invalid" })
+            return res.status(403).json({ error: "Token invalid" })
         }
         next() 
     })    
 }
 
-const checkUser = (req,res,next) => {
+const checkUser = async (req,res,next) => {
     const { username } = req.body
 
-    const user = User.find({username})
+    const user = await User.findOne({username})
 
-    if (typeof user !== 'undefined'){
-        res.status(409).json({ error: "User already exists"})
+    console.log("Usuario encontrado", req.body)
+    if ( user !== null ){
+        return res.status(409).json({ error: "User already exists"})
     }
     next()
 }
@@ -67,7 +72,7 @@ const checkUserLogin = async (req,res,next) => {
     : await bcrypt.compare(password, user.passwordHash)
 
     if (!(user && passwordCorrect)) {
-        response.status(401).json({ error: 'invalid user or password'})
+        return response.status(401).json({ error: 'invalid user or password'})
     }
 
     const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
