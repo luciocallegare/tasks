@@ -2,10 +2,25 @@ const {body, validationResult, param} = require('express-validator')
 const jwt = require("jsonwebtoken")
 const User = require('../models/Users')
 const accessToken = process.env.ACCESS_TOKEN_SECRET
+const bcrypt = require('bcryptjs')
+
+const createBodyChecks = () => [
+    body('name').notEmpty().withMessage('Task needs a name'),
+    body('description').notEmpty().withMessage('Please provide a description of the task')
+]
+
+const createUserBodyChecks = () => [
+    body('username').exists().notEmpty().withMessage('Username needed'),
+    body('password').exists().notEmpty().withMessage('Password needed')
+]
+
+const createParamsChecks = () => [
+    param('id').notEmpty(),
+    param('id').isString(),
+    param('id').isMongoId()
+]
 
 const checkBody = (req,res,next) => {
-    body('name').notEmpty()
-    body('description').notEmpty()
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -17,8 +32,6 @@ const checkUserBody = (req,res,next) => {
     if (Object.keys(req.body).length === 0) {
         return res.status(400).json({error:'Empty body'})
     }
-    body('username').exists().notEmpty()
-    body('password').exists().notEmpty()
     const errors = validationResult(req)
     console.log(errors)
     if (!errors.isEmpty()) {
@@ -27,9 +40,6 @@ const checkUserBody = (req,res,next) => {
     next()
 }
 const checkParams = (req,res,next) => {
-    param('id').notEmpty()
-    param('id').isString()
-    param('id').isMongoId()
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
@@ -63,16 +73,16 @@ const checkUser = async (req,res,next) => {
 }
 
 const checkUserLogin = async (req,res,next) => {
-    const {username,passwordHash} = req.body
+    const {username,password} = req.body
 
-    const user = User.findOne({username})
+    const user = await User.findOne({username})
 
     const passwordCorrect = user === null
     ? false
     : await bcrypt.compare(password, user.passwordHash)
 
     if (!(user && passwordCorrect)) {
-        return response.status(401).json({ error: 'invalid user or password'})
+        return res.status(401).json({ error: 'invalid user or password'})
     }
 
     const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
@@ -80,4 +90,14 @@ const checkUserLogin = async (req,res,next) => {
     res.send({ username,token })
 }
 
-module.exports = {checkBody,checkParams,checkToken,checkUser,checkUserBody, checkUserLogin}
+module.exports = {
+    checkBody,
+    checkParams,
+    checkToken,
+    checkUser,
+    checkUserBody, 
+    checkUserLogin,
+    createBodyChecks,
+    createUserBodyChecks,
+    createParamsChecks,
+}
