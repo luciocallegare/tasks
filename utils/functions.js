@@ -5,6 +5,8 @@ const NOTFOUND_CODE = 'ERRNOTFOUND'
 const jwt = require("jsonwebtoken")
 const User = require('../models/Users')
 const bcrypt = require('bcryptjs')
+const accessToken = process.env.ACCESS_SECRET_TOKEN
+
 
 const getTasks = async (taskId) => {
     if (typeof taskId != 'undefined'){
@@ -61,4 +63,11 @@ const signUp = async (userObj) => {
     }
 }
 
-module.exports = {getTasks,modifyTask,deleteTask,addTask,signUp}
+const sendToken = async (req,res,next) => {
+    const { username } = req.body
+    const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
+    res.send({ username,token }) 
+}
+
+
+module.exports = {getTasks,modifyTask,deleteTask,addTask,signUp,sendToken}

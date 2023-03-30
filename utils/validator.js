@@ -1,7 +1,6 @@
-const {body, validationResult, param} = require('express-validator')
+const {body,header, validationResult, param} = require('express-validator')
 const jwt = require("jsonwebtoken")
 const User = require('../models/Users')
-const accessToken = process.env.ACCESS_TOKEN_SECRET
 const bcrypt = require('bcryptjs')
 
 const createBodyChecks = () => [
@@ -10,9 +9,24 @@ const createBodyChecks = () => [
 ]
 
 const createUserBodyChecks = () => [
-    body('username').exists().notEmpty().withMessage('Username needed'),
+    body('username')
+        .exists()
+        .notEmpty()
+        .withMessage('Username needed'),
     body('password').exists().notEmpty().withMessage('Password needed')
 ]
+
+const checkUserExists = body('username')
+    .custom(async (username) =>{
+        const user = await User.findOne({username})
+        if ( user !== null ){
+            throw({ 
+                error: "User already exists",
+                status: 409
+            })
+        }
+        return true
+})
 
 const createParamsChecks = () => [
     param('id').notEmpty(),
@@ -20,7 +34,7 @@ const createParamsChecks = () => [
     param('id').isMongoId()
 ]
 
-const checkBody = (req,res,next) => {
+const checkResult = (req,res,next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -28,74 +42,46 @@ const checkBody = (req,res,next) => {
     next()
 }
 
-const checkUserBody = (req,res,next) => {
-    if (Object.keys(req.body).length === 0) {
-        return res.status(400).json({error:'Empty body'})
-    }
-    const errors = validationResult(req)
-    console.log(errors)
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    next()
-}
-const checkParams = (req,res,next) => {
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    next()
-}
+const checkToken = header('authorization')
+    .notEmpty()
+    .withMessage('Authorization header missing')
+    .custom(authHeader => {
+        const token = authHeader?.split(" ")[1]
+        if (token == null) { 
+            throw new Error("Token not present")
+        }    
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+            if (err) { 
+                throw({
+                    error: "Token invalid",
+                    status: 403
+                })
+            }
+            return true
+        })        
+    })
 
-const checkToken = (req,res,next) => {
-    const authHeader = req.headers["authorization"]
-    const token = authHeader?.split(" ")[1]
-    if (token == null) { 
-        return res.status(400).json("Token not present")
-    }    
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) { 
-            return res.status(403).json({ error: "Token invalid" })
+
+const checkUserLogin = [
+    body().custom(async body => {
+        const {username,password} = body
+
+        const user = await User.findOne({username})
+    
+        const passwordCorrect = user === null
+        ? false
+        : await bcrypt.compare(password, user.passwordHash)
+        if (!(user && passwordCorrect)) {
+            throw({ error: 'invalid user or password'})
         }
-        next() 
-    })    
-}
-
-const checkUser = async (req,res,next) => {
-    const { username } = req.body
-
-    const user = await User.findOne({username})
-
-    console.log("Usuario encontrado", req.body)
-    if ( user !== null ){
-        return res.status(409).json({ error: "User already exists"})
-    }
-    next()
-}
-
-const checkUserLogin = async (req,res,next) => {
-    const {username,password} = req.body
-
-    const user = await User.findOne({username})
-
-    const passwordCorrect = user === null
-    ? false
-    : await bcrypt.compare(password, user.passwordHash)
-
-    if (!(user && passwordCorrect)) {
-        return res.status(401).json({ error: 'invalid user or password'})
-    }
-
-    const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
-
-    res.send({ username,token })
-}
+        return true
+    })
+]
 
 module.exports = {
-    checkBody,
-    checkParams,
+    checkResult,
     checkToken,
-    checkUser,
-    checkUserBody, 
+    checkUserExists,
     checkUserLogin,
     createBodyChecks,
     createUserBodyChecks,
