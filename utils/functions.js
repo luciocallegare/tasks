@@ -45,7 +45,12 @@ const deleteTask = async (taskId) => {
     }
 }
 
-const addTask = async (task)=>{
+const addTask = async (body)=>{
+    const {task,payload} = body
+    const {username} = payload
+    
+    task.createdBy = task.lastUpdatedBy = username
+    task.createdAt =  task.lastUpdatedAt = new Date()
     const taskSaved = await Tasks(task).save()
     return {
         message: 'Task saved successfully',
@@ -65,6 +70,7 @@ const signUp = async (userObj) => {
 
 const sendToken = async (req,res,next) => {
     const { username } = req.body
+    console.log(accessToken)
     const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
     res.send({ username,token }) 
 }
