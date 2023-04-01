@@ -11,7 +11,7 @@ const accessToken = process.env.ACCESS_SECRET_TOKEN
 const getTasks = async (taskId) => {
     if (typeof taskId != 'undefined'){
         const tasks = await Tasks.findById(taskId)
-        if (typeof tasks === 'undefined'){
+        if ( tasks === null ){
             throw(NOTFOUND_CODE)
         }
         return tasks

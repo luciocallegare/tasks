@@ -1,4 +1,4 @@
-const {body,header, validationResult, param} = require('express-validator')
+const {body,header, validationResult, param } = require('express-validator')
 const jwt = require("jsonwebtoken")
 const User = require('../models/Users')
 const bcrypt = require('bcryptjs')
@@ -9,12 +9,15 @@ const createBodyChecks = [
     body('description').notEmpty().withMessage('Please provide a description of the task')
 ]
 
+const createBodyNotEmpty = [
+    body().notEmpty().withMessage('Please provide atributes to modifiy')
+]
+
 const createUserBodyChecks = [
     body('username')
-        .exists()
         .notEmpty()
         .withMessage('Username needed'),
-    body('password').exists().notEmpty().withMessage('Password needed')
+    body('password').notEmpty().withMessage('Password needed')
 ]
 
 const checkUserExists = body('username')
@@ -29,16 +32,22 @@ const checkUserExists = body('username')
         return true
 })
 
+const createGetParamChecks = param('id')
+    .if(value => typeof value !== 'undefined')
+    .isMongoId().withMessage('Id should be a valid Mongo Id')
+
 const createParamsChecks = [
-    param('id').notEmpty(),
-    param('id').isString(),
-    param('id').isMongoId()
+    param('id').notEmpty().withMessage('Id needed'),
+    param('id').isString().withMessage('Id should be String'),
+    param('id').isMongoId().withMessage('Id should be a valid Mongo Id')
 ]
 
 const checkResult = (req,res,next) => {
     const errors = validationResult(req)
+    const errArray = errors.array()
+    const status = errArray.find(e => e.msg.status)?.msg.status
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(status || 400).json({ errors: errArray });
     }
     next()
 }
@@ -85,9 +94,9 @@ const checkUserLogin = [
     })
 ]
 
-const checkNOTFOUND = (req,res,next,err) => {
-    if (err.message === 'ERRNOTFOUND'){
-        res.status(404).json({
+const checkNOTFOUND = (err,req,res,next) => {
+    if (err === 'ERRNOTFOUND'){
+        return res.status(404).json({
             msg: 'Task not found',
             param: "id",
             location: 'params'
@@ -103,5 +112,7 @@ module.exports = {
     createBodyChecks,
     createUserBodyChecks,
     createParamsChecks,
-    checkNOTFOUND
+    checkNOTFOUND,
+    createGetParamChecks,
+    createBodyNotEmpty
 }

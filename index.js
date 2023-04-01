@@ -5,11 +5,12 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const Functions = require('./utils/functions')
 const Validator = require('./utils/validator')
+const Middlewares = require('./utils/middlewares')
 
 mongoose.connect(process.env.DB_CONNECTION)
 
 app.use(bodyParser.json())
-app.listen(port,()=>{
+const server = app.listen(port,()=>{
     console.log('App listening at port ',port)
 })
 
@@ -18,7 +19,7 @@ app.post('/signup',
         Validator.createUserBodyChecks,
         Validator.checkUserExists, 
         Validator.checkResult,
-        async (req,res) => res.send(await Functions.signUp(req.body))
+        async (req,res) => res.send(await Functions.signUp(req.body)),
     )
 app.post('/login',
         Validator.createUserBodyChecks,
@@ -30,17 +31,19 @@ app.post('/login',
 //Manejo de datos
 app.use(Validator.checkToken)
 app.get('/tasks/:id?', 
+        Validator.createGetParamChecks,
         Validator.checkResult,
-        async (req,res) => res.send(await Functions.getTasks(req.params?.id))
+        Middlewares.getTasks
     )
 app.put('/tasks/:id?',
         Validator.createParamsChecks,
         Validator.checkResult,
-        async (req,res)=> res.send(await Functions.modifyTask(req.params?.id,req.body))
+        Middlewares.modifyTask
     )
 app.delete('/tasks/:id?',
+        Validator.createParamsChecks,
         Validator.checkResult,
-        async (req,res)=> res.send(await Functions.deleteTask(req.params?.id))
+        Middlewares.deleteTask
     )
 app.post('/tasks',
         Validator.createBodyChecks,
@@ -48,3 +51,5 @@ app.post('/tasks',
         async (req,res)=> res.send(await Functions.addTask(req.body))
     )
 app.use(Validator.checkNOTFOUND)
+
+module.exports = {app,server}
