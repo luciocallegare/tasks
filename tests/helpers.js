@@ -3,6 +3,8 @@ const { app,server } = require('../index')
 const jwt = require('jsonwebtoken')
 const Task = require('../models/Tasks')
 const mongoose = require('mongoose')
+const User = require('../models/Users')
+const bcrypt = require('bcryptjs')
 
 const api = supertest(app)
 const closeConnection =async () => {
@@ -13,6 +15,7 @@ const token = jwt.sign({ username: 'tester' },process.env.ACCESS_SECRET_TOKEN)
 
 const cleanDB = async ()=>{
     await Task.deleteMany({})
+    await User.deleteMany({})
 }
 
 const addExample = async () => {
@@ -21,6 +24,18 @@ const addExample = async () => {
         description: 'This task was created in an automated test'
     }
     return await Task(taskExample).save()
+}
+
+const addUser = async () => {
+    const userExample = {
+        username: "testUser",
+        passwordHash: await bcrypt.hash('test_password',10)
+    }
+    await User(userExample).save()
+    return {
+        username: "testUser",
+        password: 'test_password'
+    }
 }
 
 const populateDB = async (nTasks) => {
@@ -44,6 +59,7 @@ module.exports = {
     cleanDB,
     addExample,
     populateDB,
-    getAllTasks
+    getAllTasks,
+    addUser
 }
 

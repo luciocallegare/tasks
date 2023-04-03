@@ -63,6 +63,62 @@ describe('Test put endpoint',()=>{
             .expect('Content-Type', /application\/json/)
         expect(res.body.msg).toBe('Task not found')
     })
+    test('Forbidden argument added: createdBy', async ()=>{
+        const newTask = await addExample()
+        const forbidden = {
+            "createdBy":"anotherUser"
+        }
+        const res = await api
+            .put(`/tasks/${newTask.id.toString()}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(forbidden)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+        expect(res.body.errors[0].msg).toBe('Forbidden argument')   
+
+    })
+    test('Forbidden argument added: createdAt', async ()=>{
+        const newTask = await addExample()
+        const forbidden = {
+            "createdAt":new Date()
+        }
+        const res = await api
+            .put(`/tasks/${newTask.id.toString()}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(forbidden)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+        expect(res.body.errors[0].msg).toBe('Forbidden argument')   
+
+    })
+    test('Forbidden argument added: lastUpdatedBy', async ()=>{
+        const newTask = await addExample()
+        const forbidden = {
+            "lastUpdatedBy":"anotherUser"
+        }
+        const res = await api
+            .put(`/tasks/${newTask.id.toString()}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(forbidden)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+        expect(res.body.errors[0].msg).toBe('Forbidden argument')   
+
+    })
+    test('Forbidden argument added: lastUpdatedAt', async ()=>{
+        const newTask = await addExample()
+        const forbidden = {
+            "lastUpdatedAt":new Date()
+        }
+        const res = await api
+            .put(`/tasks/${newTask.id.toString()}`)
+            .set('Authorization', `Bearer ${token}`)
+            .send(forbidden)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+        expect(res.body.errors[0].msg).toBe('Forbidden argument')   
+
+    })
 })
 afterAll(async ()=>{
     await closeConnection()

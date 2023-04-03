@@ -70,7 +70,6 @@ const signUp = async (userObj) => {
 
 const sendToken = async (req,res,next) => {
     const { username } = req.body
-    console.log(accessToken)
     const token = jwt.sign({username},accessToken,{ expiresIn: 60 * 60 * 24 })
     res.send({ username,token }) 
 }

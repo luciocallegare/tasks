@@ -48,6 +48,13 @@ const createParamsChecks = [
     param('id').isMongoId().withMessage('Id should be a valid Mongo Id')
 ]
 
+const forbiddenArgs = [
+    body('createdBy').isEmpty().withMessage('Forbidden argument'),
+    body('createdAt').isEmpty().withMessage('Forbidden argument'),
+    body('lastUpdatedBy').isEmpty().withMessage('Forbidden argument'),
+    body('lastUpdatedAt').isEmpty().withMessage('Forbidden argument'),
+]
+
 const checkResult = (req,res,next) => {
     const errors = validationResult(req)
     const errArray = errors.array()
@@ -120,5 +127,6 @@ module.exports = {
     createParamsChecks,
     checkNOTFOUND,
     createGetParamChecks,
-    createBodyNotEmpty
+    createBodyNotEmpty,
+    forbiddenArgs
 }
