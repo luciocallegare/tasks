@@ -11,7 +11,7 @@ const getTasks = async (req,res,next) => {
 
 const modifyTask = async (req,res,next) => {
     try{
-        res.send(await Functions.modifyTask(req.params?.id,req.body))
+        res.send(await Functions.modifyTask(req.params?.id,req.body.task))
     } catch (err){
         next(err)
     }

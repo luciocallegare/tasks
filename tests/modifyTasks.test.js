@@ -1,4 +1,3 @@
-const Task = require('../models/Tasks')
 const {api,token,cleanDB, populateDB,getAllTasks,addExample,closeConnection} = require('./helpers')
 const NUM_OF_TASKS = 3
 
@@ -17,10 +16,10 @@ describe('Test put endpoint',()=>{
             .put(`/tasks/${unmodifiedId}`)
             .send(mod)
             .set('Authorization', `Bearer ${token}`)
-            //.expect(200)
+            .expect(200)
             .expect('Content-Type', /application\/json/)
         console.log(res.body)
-        const modifiedTask = (await getAllTasks()).find(task => task._id === unmodified._id)
+        const modifiedTask = (await getAllTasks()).find(task => task._id.toString() === unmodified._id.toString())
         expect(unmodified.name).not.toBe(modifiedTask.name)
     })
     test('Invalid id',async ()=> {
@@ -42,12 +41,23 @@ describe('Test put endpoint',()=>{
             .expect('Content-Type', /application\/json/)
         expect(res.body.errors[0].msg).toBe('Id needed')        
     })
-    test('Task not found',async ()=> {
+    test('No attributes added to modify',async ()=> {
         const newTask = await addExample()
         await cleanDB()
         const res = await api
             .put(`/tasks/${newTask.id.toString()}`)
             .send({})
+            .set('Authorization', `Bearer ${token}`)
+            .expect(400)
+            .expect('Content-Type', /application\/json/)
+        expect(res.body.errors[0].msg).toBe('Attributes to modify/add needed')
+    })
+    test('Task not found',async ()=> {
+        const newTask = await addExample()
+        await cleanDB()
+        const res = await api
+            .put(`/tasks/${newTask.id.toString()}`)
+            .send({"completed":true})
             .set('Authorization', `Bearer ${token}`)
             .expect(404)
             .expect('Content-Type', /application\/json/)

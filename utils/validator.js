@@ -10,7 +10,13 @@ const createBodyChecks = [
 ]
 
 const createBodyNotEmpty = [
-    body().notEmpty().withMessage('Please provide atributes to modifiy')
+    body('task').custom((value) => {
+        if (!Object.keys(value).length) {
+          throw new Error('Attributes to modify/add needed');
+        }
+        return true;
+      }),
+    body('task').isObject().withMessage('Body must be a JSON object'),
 ]
 
 const createUserBodyChecks = [
@@ -57,7 +63,7 @@ const checkToken = header('authorization')
     .withMessage('Authorization header missing')
     .custom((authHeader, { req }) => {
         const token = authHeader?.split(" ")[1]
-        const task = req.body
+        const task = Object.assign({},req.body)
         if (token == null) { 
             throw new Error("Token not present")
         }    

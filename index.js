@@ -37,6 +37,7 @@ app.get('/tasks/:id?',
     )
 app.put('/tasks/:id?',
         Validator.createParamsChecks,
+        Validator.createBodyNotEmpty,
         Validator.checkResult,
         Middlewares.modifyTask
     )
