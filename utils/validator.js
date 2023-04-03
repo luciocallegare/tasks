@@ -2,6 +2,7 @@ const {body,header, validationResult, param } = require('express-validator')
 const jwt = require("jsonwebtoken")
 const User = require('../models/Users')
 const bcrypt = require('bcryptjs')
+const e = require('express')
 const accessToken = process.env.ACCESS_SECRET_TOKEN
 
 const createBodyChecks = [
@@ -58,7 +59,10 @@ const forbiddenArgs = [
 const checkResult = (req,res,next) => {
     const errors = validationResult(req)
     const errArray = errors.array()
-    const status = errArray.find(e => e.msg.status)?.msg.status
+    let status = errArray.find(e => e.msg.status)?.msg.status
+    if (errArray?.[0]?.msg === 'Forbidden argument') {
+        status = 401
+    }
     if (!errors.isEmpty()) {
         return res.status(status || 400).json({ errors: errArray });
     }

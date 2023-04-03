@@ -72,7 +72,7 @@ describe('Test put endpoint',()=>{
             .put(`/tasks/${newTask.id.toString()}`)
             .set('Authorization', `Bearer ${token}`)
             .send(forbidden)
-            .expect(400)
+            .expect(401)
             .expect('Content-Type', /application\/json/)
         expect(res.body.errors[0].msg).toBe('Forbidden argument')   
 
@@ -86,7 +86,7 @@ describe('Test put endpoint',()=>{
             .put(`/tasks/${newTask.id.toString()}`)
             .set('Authorization', `Bearer ${token}`)
             .send(forbidden)
-            .expect(400)
+            .expect(401)
             .expect('Content-Type', /application\/json/)
         expect(res.body.errors[0].msg).toBe('Forbidden argument')   
 
@@ -100,7 +100,7 @@ describe('Test put endpoint',()=>{
             .put(`/tasks/${newTask.id.toString()}`)
             .set('Authorization', `Bearer ${token}`)
             .send(forbidden)
-            .expect(400)
+            .expect(401)
             .expect('Content-Type', /application\/json/)
         expect(res.body.errors[0].msg).toBe('Forbidden argument')   
 
@@ -114,7 +114,7 @@ describe('Test put endpoint',()=>{
             .put(`/tasks/${newTask.id.toString()}`)
             .set('Authorization', `Bearer ${token}`)
             .send(forbidden)
-            .expect(400)
+            .expect(401)
             .expect('Content-Type', /application\/json/)
         expect(res.body.errors[0].msg).toBe('Forbidden argument')   
 

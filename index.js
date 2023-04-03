@@ -206,7 +206,9 @@ app.post('/login',
  *          200:
  *              description: modifies task correctly
  *          400:
- *              description: missing or malformed id, or forbidden args added
+ *              description: missing or malformed id
+ *          401:
+ *              description: Trying to modify forbidden argument
  *          404:
  *              description: task not found  
  *  delete:
@@ -251,7 +253,9 @@ app.post('/login',
  *          200:
  *              description: adds tasks succesfully
  *          400:
- *              description: Missing required arguments or forbidden args
+ *              description: Missing required arguments
+ *          401: 
+ *              description: Attempting to modify forbidden argument
  * 
  *                       
  */
